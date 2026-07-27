@@ -164,9 +164,9 @@ cd hermes-guard && bash install.sh /path/to/your-project
 
 ## 📊 Real-World Results / 实战效果
 
-Deployed on [M-ABI](https://github.com/mlzl1426/cb-bi) — a 50,000-line commercial BI platform:
+Deployed on a 50,000-line commercial BI platform (private repo):
 
-已在 [M-ABI](https://github.com/mlzl1426/cb-bi)（5 万行商业 BI 平台）上验证：
+已在 5 万行商业 BI 平台（私有仓库）上验证：
 
 | Problem / 问题 | Before / 之前 | After / 之后 |
 |---------|:--:|:--:|
