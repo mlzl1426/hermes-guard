@@ -113,7 +113,7 @@ hermes-guard/
 │   ├── danger-guard.sh          # Blocks destructive commands
 │   ├── scope-check.sh           # Task scope state machine
 │   ├── pre-commit-check.sh      # Git hook compliance gate
-│   ├── verify-project.sh        # 17 health checks
+│   ├── verify-project.sh        # 9 health checks
 │   └── daily-check.sh           # Silent cron inspection
 ├── skills/
 │   ├── guard/SKILL.md           # IMPACT→RULE→VERIFY enforcement

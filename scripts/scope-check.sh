@@ -35,8 +35,10 @@ do_declare() {
     baseline=$(git diff --name-only 2>/dev/null | sort)
     local staged
     staged=$(git diff --cached --name-only 2>/dev/null | sort)
+    local untracked
+    untracked=$(git ls-files --others --exclude-standard 2>/dev/null | sort)
     local all_files
-    all_files=$( (echo "$baseline"; echo "$staged") | sort -u | grep -v '^$')
+    all_files=$( (echo "$baseline"; echo "$staged"; echo "$untracked") | sort -u | grep -v '^$')
 
     mkdir -p .hermes
     cat > "$SCOPE_FILE" << EOF
@@ -53,7 +55,7 @@ EOF
     bold "\360\237\223\213 Scope declared"
     echo "   Task: $task"
     echo "   Baseline files ($(echo "$all_files" | grep -c .)):"
-    echo "$all_files" | sed 's/^/     \360\237\223\204 /'
+    echo "$all_files" | sed 's/^/     📄 /'
     echo ""
     echo "   When done: bash scripts/scope-check.sh verify"
 }
@@ -73,10 +75,11 @@ do_verify() {
     baseline_files=$(sed -n '/baseline_files:/,/^[a-z]/p' "$SCOPE_FILE" \
         | grep '  - "' | sed 's/  - "//' | sed 's/"$//')
 
-    local current_files staged_files all_current
+    local current_files staged_files untracked_files all_current
     current_files=$(git diff --name-only 2>/dev/null | sort)
     staged_files=$(git diff --cached --name-only 2>/dev/null | sort)
-    all_current=$( (echo "$current_files"; echo "$staged_files") | sort -u | grep -v '^$')
+    untracked_files=$(git ls-files --others --exclude-standard 2>/dev/null | sort)
+    all_current=$( (echo "$current_files"; echo "$staged_files"; echo "$untracked_files") | sort -u | grep -v '^$')
 
     local new_files="" scope_violations=0
     for f in $all_current; do
@@ -93,9 +96,9 @@ do_verify() {
 
     if [ "$scope_violations" -gt 0 ]; then
         yellow "\342\232\240\357\270\217  $scope_violations file(s) outside declared scope:"
-        echo -e "$new_files" | grep -v '^$' | sed 's/^/     \360\237\223\204 /'
+        echo -e "$new_files" | grep -v '^$' | sed 's/^/     📄 /'
 
-        local safe_patterns='^scripts/\|^docs/\|^.hermes/\|^.git/'
+        local safe_patterns='^(scripts|docs|\.hermes|\.git)/'
         local truly_risky=0
         for f in $(echo -e "$new_files" | grep -v '^$'); do
             if ! echo "$f" | grep -qE "$safe_patterns"; then

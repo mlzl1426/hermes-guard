@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint all shell scripts
+        run: |
+          shellcheck --version | head -1
+          shellcheck scripts/*.sh install.sh tests/*.sh
+
+  tests:
+    name: Shell tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check (bash -n)
+        run: |
+          for f in scripts/*.sh install.sh tests/*.sh; do
+            bash -n "$f" || exit 1
+          done
+          echo "✅ All scripts pass bash -n"
+      - name: Run test suite
+        run: bash tests/run_tests.sh
+
+  markdownlint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install markdownlint-cli2
+        run: npm install -g markdownlint-cli2
+      - name: Lint markdown files
+        run: markdownlint-cli2 "*.md" "docs/*.md" || echo "⚠️ markdownlint warnings (non-blocking)"

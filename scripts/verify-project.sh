@@ -5,12 +5,12 @@
 # Part of Hermes Guard (github.com/mlzl1426/hermes-guard)
 # Aligned with: repo-seatbelt (github.com/berkcangumusisik/repo-seatbelt)
 #
-# Pure shell, zero tokens, 17 automated checks.
+# Pure shell, zero tokens, 9 built-in checks (extensible to 17+).
 # The agent CANNOT fake these results — they come from real system calls.
 #
 # Usage:
-#   bash verify-project.sh          # All 17 checks
-#   bash verify-project.sh --quick  # 9 critical checks
+#   bash verify-project.sh          # All 9 checks
+#   bash verify-project.sh --quick  # 9 checks, no extended section
 #   bash verify-project.sh --json   # Machine-readable output
 #
 # Configuration: edit the CONFIG section below for your project.
@@ -25,7 +25,7 @@ DB_CONTAINER="${DB_CONTAINER:-db}"
 DB_NAME="${DB_NAME:-app}"
 DB_USER="${DB_USER:-root}"
 DB_PASS="${DB_PASS:-secret}"
-CRITICAL_FILES="${CRITICAL_FILES:-README.md,CHANGELOG.md,.gitignore}"
+CRITICAL_FILES="${CRITICAL_FILES-README.md,CHANGELOG.md,.gitignore}"  # Empty string disables the check
 WIN_SYNC_DIR="${WIN_SYNC_DIR:-}"  # Optional Windows host path for doc sync
 
 # ---- Parsing ----
@@ -160,12 +160,15 @@ fi
 
 # ---- Quick mode exit ----
 if [ "$QUICK" = true ]; then
+    # Record timestamp for evidence gate (pre-commit-check.sh)
+    date +%s > /tmp/hermes-guard-verify-last-run 2>/dev/null || true
     echo ""
     echo "--- Quick check done ---"
+    [ "$FAIL" -eq 0 ] || exit 1
     exit 0
 fi
 
-# ---- 10-17: Extended checks ----
+# ---- 10+: Extended checks ----
 # (Add your project-specific checks below — linting, tests, custom validations)
 
 echo ""

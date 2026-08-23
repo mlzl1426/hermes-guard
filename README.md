@@ -3,9 +3,31 @@
 > **AI agents are fast. Guardrails make them safe.**
 > **AI 代理很快，护栏让它们安全。**
 
+**AI coding agents should not be responsible for verifying their own work.**
+
+**AI 编码代理不应该负责验证自己的工作。**
+
 Hermes Guard is a **zero-token, model-proof verification layer** for AI coding agents. It runs entirely outside the agent's context — shell scripts, git hooks, and cron jobs — so the agent can't forget, skip, or hallucinate its way past the checks.
 
 Hermes Guard 是一个**零 token、模型无法绕过的验证层**。它完全在 AI 代理的上下文之外运行——纯 shell 脚本、git hooks、cron 定时任务——代理无法忘记、无法跳过、无法编造检查结果。
+
+```
+Developer
+    │
+    ▼
+AI Coding Agent
+    │
+    ▼
+HERMES GUARD
+ ├── Scope Check     (declare → verify state machine)
+ ├── Danger Guard    (intercepts destructive commands)
+ ├── Git Hook        (blocks bad commits at OS level)
+ ├── Health Check    (9 built-in project inspections)
+ └── Daily Inspection (silent cron, alerts only on problems)
+    │
+    ▼
+PASS / BLOCK
+```
 
 Built for [Hermes Agent](https://github.com/NousResearch/hermes-agent), but the scripts work with **any AI coding tool** (Claude Code, Codex, Cursor, etc.).
 
@@ -41,9 +63,13 @@ Reality: Windows host files are from last week
 实际: 宿主机文件还是上周的
 ```
 
-**The root cause: AI agents self-verify. They're both the player and the referee.** You can't trust the same model that wrote the code to verify the code.
+**The root cause: AI agents self-verify. They're both the player and the referee.** The same model that wrote the code is asked to judge the code — it has no incentive, and often no ability, to catch its own mistakes.
 
-**根因：AI 代理自我验证——既当运动员又当裁判。** 写代码的模型和验证代码的是同一个模型，你不能信它。
+**根因：AI 代理自我验证——既当运动员又当裁判。** 写代码的模型和验证代码的是同一个模型，你不能信它——它没有动机、也常常没有能力发现自己的错误。
+
+That is why verification must be **model-independent**: checks that run outside the model's reasoning, triggered by mechanisms the model cannot override.
+
+所以验证必须是**模型无关的（model-independent）**：检查在模型的推理之外运行，由模型无法覆盖的机制触发。
 
 ---
 
@@ -69,6 +95,34 @@ Hermes Guard 增加了一个**外部验证层**——检查在代理推理之外
 🟡 第一层: 技能知识库          ← 详细流程，触发词加载
 ```
 
+**The reliability principle: the more reliable a layer is, the less it depends on the AI model.** Cron and git hooks (95%) never touch the model; skills and memory (70%) are model-dependent by nature.
+
+**可靠性原则：越可靠的层越不依赖 AI 模型。** Cron 和 git hook（95%）完全不经过模型；技能和记忆（70%）天生依赖模型。
+
+---
+
+## 🚀 Quick Start / 快速开始
+
+```bash
+# 1. Install / 安装
+git clone https://github.com/mlzl1426/hermes-guard.git
+cd hermes-guard && bash install.sh /path/to/your-project
+
+# 2. What happens: / 安装后自动完成：
+#    ✅ Pre-commit hook 已安装 (.git/hooks/pre-commit)
+#    ✅ AGENTS.md 已创建（每次 Hermes 会话自动注入）
+#    ✅ Guard 技能已安装 (~/.hermes/skills/)
+#    ✅ Shell 脚本已复制到 your-project/scripts/
+#    ⏰ Cron 示例输出（需手动注册到你的 Hermes cron）
+
+# 3. Start working — protection is active immediately
+#    开始工作——保护立即生效
+```
+
+Requirements / 环境要求：`bash 4+`, `git`, and standard POSIX tools (`grep`, `sed`, `awk`, `curl`). Docker/MySQL checks auto-skip when not present.
+
+依赖：`bash 4+`、`git` 及标准 POSIX 工具（`grep`、`sed`、`awk`、`curl`）。未安装 Docker/MySQL 时相关检查自动跳过。
+
 ---
 
 ## 📦 What's Included / 包含内容
@@ -80,7 +134,7 @@ Hermes Guard 增加了一个**外部验证层**——检查在代理推理之外
 | `danger-guard.sh` | 拦截危险命令（`rm -rf`/`git push -f`/`git reset --hard`），数学验证码阻断 | [shellfirm](https://github.com/kaplanelad/shellfirm) |
 | `scope-check.sh` | 改前声明任务范围 → 改后检查是否越界 | [agent-guardrails](https://github.com/logi-cmd/agent-guardrails) |
 | `pre-commit-check.sh` | 每次提交：证据门 + 公共模块影响 + SQL 反模式检查 | [agentlint](https://github.com/mauhpr/agentlint) |
-| `verify-project.sh` | 17 项自动健康检查：API、Docker、DB、文件、Git 同步、磁盘、pycache... | [repo-seatbelt](https://github.com/berkcangumusisik/repo-seatbelt) |
+| `verify-project.sh` | 9 项内置健康检查：Git、API、Docker、DB、关键文件、磁盘、PyCache… | [repo-seatbelt](https://github.com/berkcangumusisik/repo-seatbelt) |
 | `daily-check.sh` | 静默每日巡检——只有发现问题才报告 | — |
 
 ### Skills (Hermes-native) / 技能（Hermes 原生）
@@ -98,23 +152,29 @@ Hermes Guard 增加了一个**外部验证层**——检查在代理推理之外
 
 ---
 
-## 🚀 Quick Start / 快速开始
+## 📊 Case Study / 实战案例
 
-```bash
-# 1. Install / 安装
-git clone https://github.com/mlzl1426/hermes-guard.git
-cd hermes-guard && bash install.sh /path/to/your-project
+Deployed on a 50K-line commercial BI platform (private repository, identity withheld).
 
-# 2. What happens: / 安装后自动完成：
-#    ✅ Pre-commit hook 已安装 (.git/hooks/pre-commit)
-#    ✅ AGENTS.md 已创建（每次 Hermes 会话自动注入）
-#    ✅ Cron 定时任务已注册（每日 + 每周巡检）
-#    ✅ Guard 技能已安装 (~/.hermes/skills/)
-#    ✅ Shell 脚本已复制到 your-project/scripts/
+已在 5 万行商业 BI 平台（私有仓库，项目名匿名）上实际部署验证。
 
-# 3. Start working — protection is active immediately
-#    开始工作——保护立即生效
-```
+**Project Size / 项目规模** — ~50K LOC (Python/Vue/SQL), 284 commits, in production use since July 2026
+
+**Problems Found / 发现的问题**
+- Missing verification — agent claimed "verified" without running checks / 声称验证过但实际没跑
+- Workflow violations — rules forgotten after 2 days / 规则两天后被遗忘
+- Scope violations — changes touching undeclared files / 改动越出声明范围
+- Documentation mismatch — docs claimed updated, files stale / 文档声称更新实际滞后
+
+**Outcome / 效果**
+
+| Problem / 问题 | Before / 之前 | After / 之后 |
+|---------|:--:|:--:|
+| Agent forgets workflow after 2 days / 代理两天后忘记流程 | Frequent / 频繁 | Eliminated / 消除 |
+| Change A breaks B / 改 A 坏 B | Weekly / 每周 | Blocked / 拦截 |
+| "Verified" but didn't / 说验证了但没验证 | Daily / 每天 | Caught / 捕获 |
+| Files claimed updated, not actually / 说更新了但没更新 | Occasional / 偶尔 | Caught / 捕获 |
+| Documentation drift / 文档漂移 | Constant / 持续 | <3 day lag / <3 天滞后 |
 
 ---
 
@@ -125,7 +185,7 @@ cd hermes-guard && bash install.sh /path/to/your-project
 │                  HERMES GUARD                            │
 │                                                          │
 │  🟢 CRON (no_agent=true)  ─── daily-check.sh            │
-│       │  每天 9:00 + 14:00，只报告异常                    │
+│       │  每天定时巡检，只报告异常                          │
 │       │  代理忘记一切也会执行                              │
 │                                                          │
 │  🟢 GIT HOOK  ─── pre-commit-check.sh                   │
@@ -146,6 +206,9 @@ cd hermes-guard && bash install.sh /path/to/your-project
 └─────────────────────────────────────────────────────────┘
 ```
 
+Full design notes: [docs/architecture.md](docs/architecture.md)
+完整设计文档：[docs/architecture.md](docs/architecture.md)
+
 ---
 
 ## ⭐ What Makes This Different / 我们的独特之处
@@ -162,19 +225,27 @@ cd hermes-guard && bash install.sh /path/to/your-project
 
 ---
 
-## 📊 Real-World Results / 实战效果
+## 🗺️ Roadmap / 路线图
 
-Deployed on a 50,000-line commercial BI platform (private repo):
+What we are actually working on — no promises beyond these. / 只列真实计划，不做空头承诺。
 
-已在 5 万行商业 BI 平台（私有仓库）上验证：
+| Version / 版本 | Scope / 范围 |
+|--------|--------|
+| **v0.1.0** (current / 当前) | Core guard scripts + installer + bilingual docs + CI (ShellCheck) + shell tests |
+| **v0.2.0** | More danger patterns (Kubernetes / Terraform / AWS), Windows shell (Git Bash) support, wider test coverage |
+| **v0.3.0** | Editor/IDE hook integration, plugin system for custom rules, per-project rule profiles |
 
-| Problem / 问题 | Before / 之前 | After / 之后 |
-|---------|:--:|:--:|
-| Agent forgets workflow after 2 days / 代理两天后忘记流程 | Frequent / 频繁 | Eliminated / 消除 |
-| Change A breaks B / 改 A 坏 B | Weekly / 每周 | Blocked / 拦截 |
-| "Verified" but didn't / 说验证了但没验证 | Daily / 每天 | Caught / 捕获 |
-| Files claimed updated, not actually / 说更新了但没更新 | Occasional / 偶尔 | Caught / 捕获 |
-| Documentation drift / 文档漂移 | Constant / 持续 | <3 day lag / <3 天滞后 |
+---
+
+## 🌱 Vision / 愿景
+
+Hermes Guard is intended to become a **reusable verification layer for AI coding agents** — not a tool tied to a single assistant. Any developer who works with AI-assisted coding should be able to add an independent safety net in one command.
+
+Hermes Guard 的目标是成为**可复用的 AI 编码代理验证层**——不绑定任何单一助手。任何使用 AI 辅助编码的开发者，都能用一条命令给自己的项目加上独立的安全网。
+
+The project exists to help developers build **trustworthy AI-assisted development workflows**.
+
+这个项目的意义，是帮助开发者建立**可信的 AI 辅助开发流程**。
 
 ---
 
@@ -182,7 +253,7 @@ Deployed on a 50,000-line commercial BI platform (private repo):
 
 | 层 | 技术 | 可靠性 |
 |-----|------|:--:|
-| 外部脚本 | Pure Bash（零依赖） | 95% |
+| 外部脚本 | Pure Bash + POSIX tools（git/curl/grep/sed/awk，零外部依赖） | 95% |
 | Git Hook | Bash + Git | 90% |
 | Cron | Hermes `no_agent=true` | 95% |
 | 规则注入 | AGENTS.md（每次会话自动） | 90% |
@@ -208,19 +279,29 @@ Deployed on a 50,000-line commercial BI platform (private repo):
 
 ## 🤝 Contributing / 贡献
 
-Pull requests welcome! Areas we'd love help with / 欢迎 PR！希望贡献的方向：
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Areas we'd love help with / 贡献指南见 [CONTRIBUTING.md](CONTRIBUTING.md)。欢迎 PR！希望贡献的方向：
 
-- [ ] VS Code / Cursor extension / 插件
 - [ ] More danger patterns (kubernetes, terraform, AWS) / 更多危险模式
+- [ ] Windows shell (Git Bash) support / Windows 支持
+- [ ] Editor/IDE hook integrations / 编辑器/IDE 集成
 - [ ] Web dashboard for inspection history / Web 巡检历史面板
-- [ ] Claude Code / Codex native integrations / 原生集成
 - [ ] 中文文档完善
+
+## 🛡️ Security / 安全
+
+Found a vulnerability or a dangerous pattern we missed? See [SECURITY.md](SECURITY.md).
+发现漏洞或漏掉的危险模式？请看 [SECURITY.md](SECURITY.md)。
+
+## 💬 Support / 支持
+
+Questions, feedback, or issues? See [SUPPORT.md](SUPPORT.md).
+问题、反馈或故障？请看 [SUPPORT.md](SUPPORT.md)。
 
 ---
 
 ## 📄 License / 许可证
 
-MIT © 2026 [木木](https://github.com/mlzl1426)
+[MIT](LICENSE) © 2026 [木木](https://github.com/mlzl1426)
 
 ---
 
