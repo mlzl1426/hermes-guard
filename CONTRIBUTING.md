@@ -29,10 +29,10 @@ Requirements: `bash 4+`, `git`, standard POSIX tools. No build step, no dependen
 
 ```bash
 # 1. Syntax check / 语法检查
-bash -n scripts/*.sh install.sh tests/run_tests.sh
+bash -n scripts/*.sh install.sh tests/*.sh
 
 # 2. ShellCheck (if installed) / 静态检查（如已安装）
-shellcheck scripts/*.sh install.sh tests/run_tests.sh
+shellcheck scripts/*.sh install.sh tests/*.sh
 
 # 3. Test suite / 测试套件
 bash tests/run_tests.sh

@@ -90,7 +90,7 @@ Agent self-check (guard) → fast, every change
     ↓
 External verify (verify-project.sh) → independent, shell-based
     ↓  
-Git hook (pre-commit) → OS-level, cannot bypass
+Git hook (pre-commit) → enforced on the git commit path
     ↓
 Cron inspection (daily-check.sh) → automatic, catches drift
 ```

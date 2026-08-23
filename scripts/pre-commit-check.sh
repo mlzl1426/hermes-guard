@@ -28,7 +28,7 @@ echo ""
 
 # ---- 1. Staged files ----
 STAGED=$(git diff --cached --name-only 2>/dev/null)
-STAGED_COUNT=$(echo "$STAGED" | grep -c . || echo 0)
+STAGED_COUNT=$(echo "$STAGED" | grep -c . || true)
 echo "📋 Files: ${STAGED_COUNT}"
 echo ""
 

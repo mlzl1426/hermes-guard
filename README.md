@@ -1,5 +1,9 @@
 # 🛡️ Hermes Guard
 
+[![License: MIT](https://img.shields.io/github/license/mlzl1426/hermes-guard)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/mlzl1426/hermes-guard)](https://github.com/mlzl1426/hermes-guard/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/mlzl1426/hermes-guard/ci.yml?branch=master)](https://github.com/mlzl1426/hermes-guard/actions)
+
 > **AI agents are fast. Guardrails make them safe.**
 > **AI 代理很快，护栏让它们安全。**
 
@@ -7,11 +11,11 @@
 
 **AI 编码代理不应该负责验证自己的工作。**
 
-Hermes Guard is a **zero-token, model-proof verification layer** for AI coding agents. It runs entirely outside the agent's context — shell scripts, git hooks, and cron jobs — so the agent can't forget, skip, or hallucinate its way past the checks.
+Hermes Guard is a **zero-token, model-independent verification layer** for AI coding agents. It runs entirely outside the agent's context — shell scripts, git hooks, and cron jobs — so the agent cannot skip the checks by forgetting, and cannot fake their results.
 
-Hermes Guard 是一个**零 token、模型无法绕过的验证层**。它完全在 AI 代理的上下文之外运行——纯 shell 脚本、git hooks、cron 定时任务——代理无法忘记、无法跳过、无法编造检查结果。
+Hermes Guard 是一个**零 token、模型无关的验证层**。它完全在 AI 代理的上下文之外运行——纯 shell 脚本、git hooks、cron 定时任务——代理无法通过"忘记"来跳过检查，也无法编造检查结果。
 
-```
+```text
 Developer
     │
     ▼
@@ -21,7 +25,7 @@ AI Coding Agent
 HERMES GUARD
  ├── Scope Check     (declare → verify state machine)
  ├── Danger Guard    (intercepts destructive commands)
- ├── Git Hook        (blocks bad commits at OS level)
+ ├── Git Hook        (blocks bad commits on the git commit path)
  ├── Health Check    (9 built-in project inspections)
  └── Daily Inspection (silent cron, alerts only on problems)
     │
@@ -41,18 +45,18 @@ You tell your AI agent to follow rules. It says "✅ Checked everything, all goo
 
 你告诉 AI 代理要遵守规则。它说「✅ 全部检查完毕，一切正常！」——但根本没查。耳熟吗？
 
-```
+```text
 Agent: "CHANGELOG updated ✓"
 Reality: CHANGELOG.md hasn't been touched in 3 days
 
-Agent: "No impact on other modules ✓"  
+Agent: "No impact on other modules ✓"
 Reality: grep shows 12 other files reference what you just changed
 
 Agent: "All docs synced ✓"
 Reality: Windows host files are from last week
 ```
 
-```
+```text
 代理: 「CHANGELOG 已更新 ✓」
 实际: CHANGELOG.md 3 天没动过
 
@@ -67,37 +71,37 @@ Reality: Windows host files are from last week
 
 **根因：AI 代理自我验证——既当运动员又当裁判。** 写代码的模型和验证代码的是同一个模型，你不能信它——它没有动机、也常常没有能力发现自己的错误。
 
-That is why verification must be **model-independent**: checks that run outside the model's reasoning, triggered by mechanisms the model cannot override.
+That is why verification must be **model-independent**: checks that run outside the model's reasoning, triggered by mechanisms the model does not control.
 
-所以验证必须是**模型无关的（model-independent）**：检查在模型的推理之外运行，由模型无法覆盖的机制触发。
+所以验证必须是**模型无关的（model-independent）**：检查在模型的推理之外运行，由模型无法控制的机制触发。
 
 ---
 
 ## ✅ The Solution / 解决方案
 
-Hermes Guard adds an **external verification layer** — checks that run outside the agent's reasoning, so the agent physically cannot skip them.
+Hermes Guard adds an **external verification layer** — checks that run outside the agent's reasoning, so a forgetful agent cannot silently skip them.
 
-Hermes Guard 增加了一个**外部验证层**——检查在代理推理之外运行，代理物理上无法跳过。
+Hermes Guard 增加了一个**外部验证层**——检查在代理推理之外运行，健忘的代理无法悄悄跳过。
 
-```
+```text
 🟢 Layer 5: Cron auto-inspection     ← runs whether agent remembers or not
-🟢 Layer 4: Pre-commit git hook      ← blocks bad commits at the OS level
+🟢 Layer 4: Pre-commit git hook      ← blocks bad commits on the git commit path
 🟢 Layer 3: Scope + danger gates     ← prevents scope creep and destructive ops
 🟡 Layer 2: AGENTS.md auto-injection ← system-level rule injection every session
 🟡 Layer 1: Skills knowledge base    ← detailed procedures, loaded on trigger
 ```
 
-```
+```text
 🟢 第五层: Cron 自动巡检       ← 代理记不记得都会跑
-🟢 第四层: Pre-commit Git Hook ← OS 级拦截，代理绕不过去
+🟢 第四层: Pre-commit Git Hook ← git 提交路径上的强制拦截
 🟢 第三层: 范围+危险门         ← 防止越界修改和破坏性操作
 🟡 第二层: AGENTS.md 自动注入  ← 每次会话系统级规则注入
 🟡 第一层: 技能知识库          ← 详细流程，触发词加载
 ```
 
-**The reliability principle: the more reliable a layer is, the less it depends on the AI model.** Cron and git hooks (95%) never touch the model; skills and memory (70%) are model-dependent by nature.
+**The reliability principle: the more reliable a layer is, the less it depends on the AI model.** Cron and git hooks never touch the model; skills and memory are model-dependent by nature.
 
-**可靠性原则：越可靠的层越不依赖 AI 模型。** Cron 和 git hook（95%）完全不经过模型；技能和记忆（70%）天生依赖模型。
+**可靠性原则：越可靠的层越不依赖 AI 模型。** Cron 和 git hook 完全不经过模型；技能和记忆天生依赖模型。
 
 ---
 
@@ -160,13 +164,14 @@ Deployed on a 50K-line commercial BI platform (private repository, identity with
 
 **Project Size / 项目规模** — ~50K LOC (Python/Vue/SQL), 284 commits, in production use since July 2026
 
-**Problems Found / 发现的问题**
+> **Problems Found / 发现的问题**
+
 - Missing verification — agent claimed "verified" without running checks / 声称验证过但实际没跑
 - Workflow violations — rules forgotten after 2 days / 规则两天后被遗忘
 - Scope violations — changes touching undeclared files / 改动越出声明范围
 - Documentation mismatch — docs claimed updated, files stale / 文档声称更新实际滞后
 
-**Outcome / 效果**
+> **Outcome / 效果**
 
 | Problem / 问题 | Before / 之前 | After / 之后 |
 |---------|:--:|:--:|
@@ -180,7 +185,7 @@ Deployed on a 50K-line commercial BI platform (private repository, identity with
 
 ## 🏗️ Architecture / 架构
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                  HERMES GUARD                            │
 │                                                          │
@@ -189,8 +194,7 @@ Deployed on a 50K-line commercial BI platform (private repository, identity with
 │       │  代理忘记一切也会执行                              │
 │                                                          │
 │  🟢 GIT HOOK  ─── pre-commit-check.sh                   │
-│       │  拦截违规提交                                      │
-│       │  代理无法跳过——OS 级别强制执行                     │
+│       │  拦截违规提交，git 提交路径上强制执行               │
 │                                                          │
 │  🟢 GATES  ─── scope-check.sh + danger-guard.sh         │
 │       │  范围: 改前声明，改后验证                          │
@@ -211,17 +215,33 @@ Full design notes: [docs/architecture.md](docs/architecture.md)
 
 ---
 
-## ⭐ What Makes This Different / 我们的独特之处
+## ⚖️ Design Trade-offs / 设计取舍
 
-| Feature / 特性 | Hermes Guard | Other tools / 其他工具 |
+Hermes Guard prioritizes **model-independent, local, zero-token checks**. Other tools make different trade-offs — many are excellent at what they do; this table only states where we differ.
+
+Hermes Guard 优先选择**模型无关、本地、零 token 的检查**。其他工具各有取舍，很多在自己领域做得很出色；下表只说明我们的差异点。
+
+| Aspect / 维度 | Hermes Guard | Typical alternative / 常见做法 |
 |---------|:--:|:--:|
-| **Zero token cost / 零 token 成本** | ✅ Shell 脚本在代理上下文外运行 | ❌ 代理花 token 自我验证 |
-| **Model-proof / 模型绕不过去** | ✅ 代理无法绕过 git hook 或 cron | ❌ 代理可以"忘记"运行检查 |
-| **Cron catch-up / Cron 追补** | ✅ Cron 错过？会话启动自动补 | ❌ 错过就永远错过了 |
-| **Evidence gate / 证据门** | ✅ 检查你是否真的验证了，而不是声称验证了 | ❌ "我检查过了，相信我" |
-| **Scope lifecycle / 范围生命周期** | ✅ declare → verify → cleanup 状态机 | ❌ 有声明无强制执行 |
-| **Hermes native / Hermes 原生** | ✅ 深度集成 skills + memory + cron | ❌ 外部工具，松耦合 |
-| **Works offline / 离线可用** | ✅ 所有检查本地运行，无需 API | ⚠️ 部分需要云服务 |
+| **Verification cost / 验证成本** | Zero token — pure shell, no LLM calls | Verification consumes tokens (agent self-check) |
+| **Enforcement point / 强制点** | Git hook + cron — outside agent reasoning | Depends on the agent "remembering" to check |
+| **Missed checks / 漏检恢复** | Cron catch-up on session start | A missed check stays missed |
+| **Evidence / 证据** | Evidence gate — verifies you actually checked | Trusts the agent's verbal claim |
+| **Scope / 范围控制** | declare → verify → cleanup state machine | Declaration without enforcement |
+| **Agent integration / 集成深度** | Native Hermes skills + memory + cron | External tool, loose coupling |
+| **Offline / 离线** | All checks local, no API needed | Some features require cloud services |
+
+---
+
+## ⚠️ Security Boundary / 安全边界
+
+Git hooks and shell guards are **not absolute security barriers**. An agent or user with full control of the repository can bypass them (`git commit --no-verify`, editing or removing the hook, or modifying the guard scripts themselves). These tools defend against **accidental or agent-level forgetfulness** — not against a malicious actor with write access. For stronger guarantees, pair the guard with read-only CI checks and protected branches.
+
+Git hook 和 shell 防护**不是绝对的安全边界**。拥有仓库完全控制权的代理或用户可以绕过（`git commit --no-verify`、修改或删除 hook、甚至修改 guard 脚本本身）。本工具防护的是**偶然遗忘或代理级疏忽**——而不是拥有写权限的恶意行为者。如需更强保证，请配合只读 CI 检查和受保护分支。
+
+The real value is not "impossible to bypass" — it is that **verification does not depend on the model remembering to run it**.
+
+真正的价值不是「绝对无法绕过」——而是**验证不依赖模型记得去执行**。
 
 ---
 
@@ -231,7 +251,7 @@ What we are actually working on — no promises beyond these. / 只列真实计�
 
 | Version / 版本 | Scope / 范围 |
 |--------|--------|
-| **v0.1.0** (current / 当前) | Core guard scripts + installer + bilingual docs + CI (ShellCheck) + shell tests |
+| **v0.1.0** (released / 已发布) | Core guard scripts + installer + bilingual docs + CI (ShellCheck) + shell tests |
 | **v0.2.0** | More danger patterns (Kubernetes / Terraform / AWS), Windows shell (Git Bash) support, wider test coverage |
 | **v0.3.0** | Editor/IDE hook integration, plugin system for custom rules, per-project rule profiles |
 
@@ -249,15 +269,19 @@ The project exists to help developers build **trustworthy AI-assisted developmen
 
 ---
 
-## 🔬 Tech Stack / 技术栈
+## 🔬 Reliability Boundaries / 可靠性边界
 
-| 层 | 技术 | 可靠性 |
-|-----|------|:--:|
-| 外部脚本 | Pure Bash + POSIX tools（git/curl/grep/sed/awk，零外部依赖） | 95% |
-| Git Hook | Bash + Git | 90% |
-| Cron | Hermes `no_agent=true` | 95% |
-| 规则注入 | AGENTS.md（每次会话自动） | 90% |
-| 知识库 | Hermes Skills（触发词加载） | 70% |
+Instead of fake precision percentages, here is what each layer actually guarantees:
+
+不用虚假的精确百分比，这里说明每层实际保证什么：
+
+| Layer / 层 | Technology / 技术 | Reliability boundary / 可靠性边界 |
+|-----|------|------|
+| External scripts / 外部脚本 | Pure Bash + POSIX tools | Independent from model reasoning — results are real system output |
+| Git hook / 提交钩子 | Bash + Git | Enforced when the Git commit path is used (see security note above) |
+| Cron / 定时巡检 | Hermes `no_agent=true` | Runs independently from agent reasoning — no model involved |
+| Rule injection / 规则注入 | AGENTS.md (auto-injected) | Injected every session, but compliance still depends on the agent |
+| Knowledge base / 知识库 | Hermes Skills | Model-dependent — loaded on trigger, followed at the model's discretion |
 
 **核心设计原则：越可靠的层越不依赖 AI 模型。**
 

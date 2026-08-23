@@ -14,6 +14,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Editor/IDE hook integrations
 - Plugin system for custom rules
 
+## [0.1.1] - 2026-08-23
+
+### Fixed / 修复
+
+- `verify-project.sh --json` now emits **pure JSON** (header and summary separated out)
+- `grep -c` fallback (`|| echo 0`) double-counted "0" when no match — affected
+  `verify-project.sh` modified-file count and `pre-commit-check.sh` staged count
+- `verify-project.sh --quick` FAIL state reflected in exit code (regression hardening)
+
+### Changed / 变更
+
+- README: "model-proof" → **"model-independent"**; removed absolute claims
+  (physically cannot skip / cannot bypass); added **Security Boundary** section
+- Reliability percentages (95%/90%/70%) → **Reliability Boundaries** descriptions
+- "What Makes This Different" → **Design Trade-offs** (non-confrontational)
+- SECURITY.md: removed contradictory public-issue advice; single private reporting path
+- CI: markdownlint is now **blocking** (was non-blocking), with a config that
+  accounts for bilingual line lengths
+- Test suite split into per-script files (`test-*.sh`) with bypass tests —
+  15 → **20 tests**, all passing
+
 ## [0.1.0] - 2026-08-23
 
 ### Added / 新增
@@ -38,4 +59,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documentation aligned with implementation: `verify-project.sh` described as **9 built-in checks** (was incorrectly advertised as 17)
 
+[0.1.1]: https://github.com/mlzl1426/hermes-guard/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mlzl1426/hermes-guard/releases/tag/v0.1.0

@@ -1,0 +1,11 @@
+{
+  // markdownlint-cli2 configuration for Hermes Guard
+  // MD013 disabled: bilingual paragraphs pair EN+中文 on the same line by design.
+  // MD060 disabled: compact table alignment is a deliberate style.
+  // MD024 siblings_only: Keep-a-Changelog repeats "Fixed/Changed" under each version.
+  "config": {
+    "MD013": false,
+    "MD060": false,
+    "MD024": { "siblings_only": true }
+  }
+}

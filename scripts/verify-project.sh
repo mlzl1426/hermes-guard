@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# verify-project.sh — Project health verification (model-proof)
+# verify-project.sh — Project health verification (model-independent)
 #
 # Part of Hermes Guard (github.com/mlzl1426/hermes-guard)
 # Aligned with: repo-seatbelt (github.com/berkcangumusisik/repo-seatbelt)
@@ -50,12 +50,14 @@ check() {
     fi
 }
 
-echo "=== $PROJECT_NAME Health Check $(date '+%Y-%m-%d %H:%M') ==="
-echo ""
+if [ "$JSON" != true ]; then
+    echo "=== $PROJECT_NAME Health Check $(date '+%Y-%m-%d %H:%M') ==="
+    echo ""
+fi
 
 # ---- 1. Git working tree ----
 UNTRACKED=$(git status --short 2>/dev/null | grep '^??' | wc -l)
-MODIFIED=$(git status --short 2>/dev/null | grep -c '^ M\|^M ' || echo 0)
+MODIFIED=$(git status --short 2>/dev/null | grep -c '^ M\|^M ' || true)
 if [ "$UNTRACKED" -eq 0 ] && [ "$MODIFIED" -eq 0 ]; then
     check "Git状态" PASS "Clean"
 else
@@ -171,8 +173,10 @@ fi
 # ---- 10+: Extended checks ----
 # (Add your project-specific checks below — linting, tests, custom validations)
 
-echo ""
-echo "========================================"
+if [ "$JSON" != true ]; then
+    echo ""
+    echo "========================================"
+fi
 if [ "$JSON" = true ]; then
     echo "[${RESULTS[*]}]" | sed 's/} {/}, {/g'
 else

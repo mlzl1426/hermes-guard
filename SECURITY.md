@@ -9,10 +9,13 @@ Hermes Guard 的作用是拦截破坏性命令——如果存在绕过方式，�
 **Please do NOT open a public issue for security vulnerabilities.**
 **请不要为安全漏洞开公开 issue。**
 
-Instead, report privately / 请私下报告：
+Report privately through / 请通过以下渠道私下报告：
 
-- **GitHub Security Advisory**: https://github.com/mlzl1426/hermes-guard/security/advisories (preferred / 推荐)
-- **Email**: open an issue first with the label `security` if you prefer public discussion, or contact the maintainer via GitHub
+- **GitHub Security Advisory** (preferred / 推荐): open a private advisory at
+  [security/advisories](https://github.com/mlzl1426/hermes-guard/security/advisories)
+- If private reporting is unavailable, contact the maintainer directly through
+  their [GitHub profile](https://github.com/mlzl1426).
+  如果无法使用私有报告渠道，请通过维护者的 GitHub 主页直接联系。
 
 Please include / 请包含：
 

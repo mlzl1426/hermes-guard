@@ -6,24 +6,28 @@
 
 AI coding agents are powerful but unreliable at self-verification. The same model that writes code cannot be trusted to verify it — it will hallucinate, forget rules, and claim "checked" without checking.
 
-Hermes Guard solves this by creating an **external verification layer** that runs completely outside the agent's context. Shell scripts don't forget. Git hooks can't be skipped. Cron jobs don't get distracted.
+Hermes Guard solves this by creating an **external verification layer** that runs completely outside the agent's context. Shell scripts don't forget. Git hooks fire on every commit. Cron jobs don't get distracted.
 
 ## Reliability Layers
 
+Layers are ordered by how independent they are from the AI model — not by fake precision percentages:
+
+```text
+🟢 Layer 5: Cron (no_agent=true)    — shell, no model involved
+🟢 Layer 4: Git hook (pre-commit)   — enforced on the git commit path
+🟢 Layer 3: Gates (scope + danger)  — state machine + challenge-response
+🟡 Layer 2: AGENTS.md               — auto-injected context every session
+🟡 Layer 1: Skills                  — trigger-based loading
+🔴 Agent reasoning                 — self-verification, least trustworthy
 ```
-🟢 Layer 5: Cron (no_agent=true)    95% reliable — shell, no model
-🟢 Layer 4: Git hook (pre-commit)   90% reliable — OS-level enforcement
-🟢 Layer 3: Gates (scope + danger)  85% reliable — state machine
-🟡 Layer 2: AGENTS.md               70% reliable — auto-injected context
-🟡 Layer 1: Skills                  60% reliable — trigger-based loading
-🔴 Agent reasoning                   50% reliable — self-verification
-```
+
+Note: git hooks and shell guards are not absolute security barriers — an agent with full repository control can bypass them (`git commit --no-verify`, removing the hook, editing the guard itself). They defend against accidental or agent-level forgetfulness, not malicious actors. See the Security Boundary section in the README.
 
 The key insight: **the most reliable layers (🟢) do not involve the AI model at all.**
 
 ## Data Flow
 
-```
+```text
 User opens session
     │
     ├─ AGENTS.md auto-injected ─────────────── Layer 2
@@ -59,6 +63,7 @@ Weekly (automatic):
 Most tools assume their cron service is always running. On developer laptops, that's not true.
 
 Hermes Guard's session-startup skill checks:
+
 1. When did the daily cron last run?
 2. If >24 hours → execute immediately
 3. Report missed inspections to user
@@ -69,7 +74,7 @@ This means even if your laptop was off at 9 AM, protection kicks in the moment y
 
 Standard pre-commit hooks check code quality. Hermes Guard's evidence gate checks something meta:
 
-**"Did you actually run the verification, or just claim you did?"**
+> **"Did you actually run the verification, or just claim you did?"**
 
 The pre-commit hook checks `/tmp/hermes-guard-verify-last-run` — if `verify-project.sh` hasn't run in 30 minutes, it warns. This specifically targets the "I checked, trust me" hallucination pattern.
 
@@ -77,7 +82,7 @@ The pre-commit hook checks `/tmp/hermes-guard-verify-last-run` — if `verify-pr
 
 The `.hermes/scope.yaml` file acts as a state machine:
 
-```
+```text
 No file → Safe to commit
     │
     ▼ scope-check.sh declare
@@ -105,7 +110,7 @@ The file's mere existence is a signal: "Currently modifying code, commit locked.
 
 ## File Map
 
-```
+```text
 hermes-guard/
 ├── README.md                    # Overview + quick start
 ├── install.sh                   # One-command installer
@@ -138,4 +143,4 @@ fi
 if [ -f "package.json" ]; then
     npm test -- --passWithNoTests 2>/dev/null && check "Tests" PASS "Passed" || check "Tests" WARN "Some failed"
 fi
-```
+```text
